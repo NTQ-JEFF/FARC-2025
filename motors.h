@@ -11,7 +11,9 @@
 #define MOTOR1B 11
 #define MOTOR2A 12
 #define MOTOR2B 13
-#define SERVO 7
+#define SERVO_1 7
+#define SERVO_2 6
+#define SERVO_3 5
 
 #define SERVO_MIN 500  // microseconds cho góc 0°
 #define SERVO_MAX 2500 // microseconds cho góc 180°
@@ -49,7 +51,9 @@ void initMotors() {
 
   driveMotors(0, 0, 0, 0, 0, 0);
   driveLinear(0, true);
-  setServo(SERVO, 0);
+  setServo(SERVO_1, 0);
+  setServo(SERVO_2, 0);
+  setServo(SERVO_3, 0);
 }
 
 #endif
