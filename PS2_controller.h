@@ -38,6 +38,7 @@ int linearActual = 0;
 // ==== Prototype ====
 int RL_CHECK();
 int DP_CHECK();
+int GM_CHECK();
 
 // ==== Setup PS2 ====
 void setupPS2controller() {
@@ -74,9 +75,9 @@ void PS2controlSmooth() {
     linearActual = 0;
     driveMotors(0, 0, 0, 0, 0, 0);
     driveLinear(0, true);
-    setServo(SERVO_1, 0);
+    setServo(SERVO_1, 35);
     setServo(SERVO_2, 0);
-    setServo(SERVO_3, 0);
+    setServo(SERVO_3, 90);
     return;
   }
 
@@ -134,7 +135,7 @@ void PS2controlSmooth() {
   // --- Điều khiển servo mượt khi giữ L1/L2 ---
   static int servo1Angle = 0;
   static unsigned long lastServo1Update = 0;
-  const int SERVO_STEP = 2;        // Mỗi lần tăng/giảm 2 độ
+  const int SERVO_STEP = 3;        // Mỗi lần tăng/giảm 2 độ
   const int SERVO_DELAY = 50;     // Cứ 50ms tăng/giảm 1 bước
 
   unsigned long now1 = millis();
@@ -142,13 +143,13 @@ void PS2controlSmooth() {
 
   if (rlState == 3 && now1 - lastServo1Update >= SERVO_DELAY) {
     servo1Angle += SERVO_STEP;
-    if (servo1Angle > 100) servo1Angle = 100;
+    if (servo1Angle > 95) servo1Angle = 95;
     updated1 = true;
   }
 
   if (rlState == 4 && now1 - lastServo1Update >= SERVO_DELAY) {
     servo1Angle -= SERVO_STEP;
-    if (servo1Angle < 0) servo1Angle = 0;
+    if (servo1Angle < 35) servo1Angle = 35;
     updated1 = true;
   }
 
@@ -159,8 +160,8 @@ void PS2controlSmooth() {
   }
   int dpState = DP_CHECK();
   switch(dpState) {
-    case(3): Angle = 180; break;
-    case(4): Angle = 0; break;
+    case(3): Angle = 30; break;
+    case(4): Angle = 90; break;
   }
   setServo(SERVO_3, Angle);
 
@@ -172,22 +173,29 @@ void PS2controlSmooth() {
   bool updated2 = false;
 
   if (dpState == 1 && now2 - lastServo2Update >= SERVO_DELAY) {
-    servo2Angle += SERVO_STEP;
-    if (servo2Angle > 170) servo2Angle = 170;
+    servo2Angle += SERVO_STEP * 3 ;
+    if (servo2Angle > 180) servo2Angle = 180;
     updated2 = true;
   }
 
   if (dpState == 2 && now2 - lastServo2Update >= SERVO_DELAY) {
-    servo2Angle -= SERVO_STEP;
+    servo2Angle -= SERVO_STEP * 3;
     if (servo2Angle < 0) servo2Angle = 0;
     updated2 = true;
   }
 
   if (updated2) {
-    setServo(SERVO_1, servo2Angle);
+    setServo(SERVO_2, servo2Angle);
     Serial.print("Servo góc: "); Serial.println(servo2Angle);
     lastServo2Update = now2;
   }
+  int gmState = GM_CHECK();
+  switch(gmState) {
+    case(1): servo2Angle = 180; break;
+    case(2): servo2Angle = 0; break;
+    case(3): servo2Angle = 90; break;
+  }
+  setServo(SERVO_2, servo2Angle);
 }
 
 // ==== RL_CHECK có Serial Monitor ====
@@ -233,6 +241,31 @@ int DP_CHECK() {
       case 2: Serial.println("DP: DOWN pressed"); break;
       case 3: Serial.println("DP: RIGHT pressed"); break;
       case 4: Serial.println("DP: LEFT pressed"); break;
+    }
+    lastState = currentState;
+  }
+
+  return currentState;
+}
+
+// ==== GM_CHECK có Serial Monitor ====
+int GM_CHECK() {
+  static int lastState = -1; // Lưu trạng thái trước đó
+
+  int currentState = 0;
+  if (ps2x.Button(PSB_TRIANGLE)) currentState = 1;
+  else if (ps2x.Button(PSB_CROSS)) currentState = 2;
+  else if (ps2x.Button(PSB_CIRCLE)) currentState = 3;
+  else if (ps2x.Button(PSB_SQUARE)) currentState = 4;
+
+  // Chỉ in khi thay đổi
+  if (currentState != lastState) {
+    switch (currentState) {
+      case 0: Serial.println("GM: None"); break;
+      case 1: Serial.println("GM: TRIANGLE pressed"); break;
+      case 2: Serial.println("GM: CROSS pressed"); break;
+      case 3: Serial.println("GM: CIRCLE pressed"); break;
+      case 4: Serial.println("GM: SQUARE pressed"); break;
     }
     lastState = currentState;
   }
