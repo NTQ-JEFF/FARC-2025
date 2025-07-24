@@ -99,14 +99,9 @@ void PS2controlSmooth() {
     turn = -map(ps2x.Analog(PSS_RX), JOY_CENTER_X, 255, 0, MAX_DRIVE * TURN_SCALE);
   }
 
-  bool Turning = (abs(turn) > 30);
-
   // 3️⃣ Tính tốc độ trái/phải
   targetLeft  = speed - turn;
   targetRight = speed + turn;
-  
-  // if (!Turning) LEFT_SCALE = 0.98;
-  // else if (Turning) LEFT_SCALE = 1.0;
 
   // 4️⃣ Làm mượt trái/phải
   driveLeft  = smooth(driveLeft, targetLeft);
