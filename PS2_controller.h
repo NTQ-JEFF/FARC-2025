@@ -188,7 +188,6 @@ void PS2controlSmooth() {
   switch(gmState) {
     case(1): servo2Angle = 180; break;
     case(2): servo2Angle = 0; break;
-    case(3): servo2Angle = 90; break;
   }
   setServo(SERVO_2, servo2Angle);
 }
